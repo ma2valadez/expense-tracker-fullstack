@@ -7,18 +7,8 @@ const mongoose = require('mongoose');
  */
 const connectDB = async () => {
     try {
-        // Connection options
-        const options = {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            // Automatically create indexes
-            autoIndex: true,
-            // Use the new Server Discovery and Monitoring engine
-            serverSelectionTimeoutMS: 5000,
-        };
-
-        // Establish connection
-        const conn = await mongoose.connect(process.env.MONGODB_URI, options);
+        // Remove deprecated options - MongoDB driver 4.0+ doesn't need them
+        const conn = await mongoose.connect(process.env.MONGODB_URI);
 
         console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
 

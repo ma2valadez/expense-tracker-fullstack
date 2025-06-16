@@ -1,3 +1,4 @@
+// backend/src/controllers/authController.js
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
@@ -19,27 +20,62 @@ const generateToken = (id) => {
  * @route   POST /api/auth/register
  * @access  Public
  */
-exports.register = async (req, res, next) => {
+exports.register = async (req, res) => {
+    console.log('Register endpoint hit');
+    console.log('Request body:', req.body);
+
     try {
         const { name, email, password } = req.body;
+
+        // Check if all fields are provided
+        if (!name || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide all required fields'
+            });
+        }
+
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({
+                success: false,
+                message: 'User already exists with this email'
+            });
+        }
 
         // Create user
         const user = await User.create({
             name,
             email,
-            password,
+            password
         });
 
         // Generate token
         const token = generateToken(user._id);
 
+        console.log('User created successfully:', user.email);
+
+        // Important: Send the response in the format the frontend expects
         res.status(201).json({
             success: true,
             token,
-            user,
+            user: {
+                _id: user._id,  // Changed from 'id' to '_id'
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                isActive: user.isActive,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
+            }
         });
     } catch (error) {
-        next(error);
+        console.error('Register error:', error);
+        res.status(400).json({
+            success: false,
+            message: error.message || 'Registration failed'
+        });
     }
 };
 
@@ -87,10 +123,19 @@ exports.login = async (req, res, next) => {
         // Generate token
         const token = generateToken(user._id);
 
+        // Send consistent response format
         res.status(200).json({
             success: true,
             token,
-            user,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                isActive: user.isActive,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
+            }
         });
     } catch (error) {
         next(error);
@@ -105,7 +150,7 @@ exports.login = async (req, res, next) => {
 exports.getMe = async (req, res, next) => {
     res.status(200).json({
         success: true,
-        user: req.user,
+        data: req.user,  // Changed from 'user' to 'data' to match frontend expectations
     });
 };
 
@@ -132,7 +177,7 @@ exports.updateDetails = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            user,
+            data: user,  // Changed from 'user' to 'data'
         });
     } catch (error) {
         next(error);
