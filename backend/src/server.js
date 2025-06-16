@@ -1,59 +1,49 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
+const app = require('./app');
+const connectDB = require('./config/database');
 
-const app = express();
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// MongoDB Connection (without deprecated options)
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => {
-        console.log('✅ MongoDB Connected Successfully');
-        console.log(`📍 Database: ${mongoose.connection.name}`);
-    })
-    .catch((err) => {
-        console.error('❌ MongoDB Connection Error:', err.message);
-        process.exit(1);
-    });
-
-// Import Routes
-const authRoutes = require('./routes/authRoutes');
-const expenseRoutes = require('./routes/expenseRoutes');
-
-// Basic Routes
-app.get('/', (req, res) => {
-    res.json({ message: 'Expense Tracker API' });
-});
-
-app.get('/health', (req, res) => {
-    res.json({
-        status: 'OK',
-        mongodb: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
-        timestamp: new Date().toISOString()
-    });
-});
-
-// API Routes
-app.use('/api/auth', authRoutes);
-
-// Error Handler
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
-        success: false,
-        message: 'Something went wrong!'
-    });
-});
-
-app.use('/api/expenses', expenseRoutes);
-
-// Start Server
+// Get port from environment
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📱 Health check: http://localhost:${PORT}/health`);
+
+// Start server
+const startServer = async () => {
+    try {
+        // Connect to database first
+        await connectDB();
+
+        // Then start listening
+        const server = app.listen(PORT, () => {
+            console.log(`🚀 Server running on port ${PORT}`);
+            console.log(`📍 Environment: ${process.env.NODE_ENV}`);
+            console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+        });
+
+        // Handle graceful shutdown
+        process.on('SIGTERM', () => {
+            console.log('SIGTERM signal received: closing HTTP server');
+            server.close(() => {
+                console.log('HTTP server closed');
+            });
+        });
+
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
+};
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+    console.error('UNHANDLED REJECTION! 💥 Shutting down...');
+    console.error(err);
+    process.exit(1);
 });
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+    console.error('UNCAUGHT EXCEPTION! 💥 Shutting down...');
+    console.error(err);
+    process.exit(1);
+});
+
+// Start the server
+startServer();
