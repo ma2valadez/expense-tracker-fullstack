@@ -1,0 +1,46 @@
+### Health Check
+GET http://localhost:5000/health
+
+### Register New User
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123"
+}
+
+### Login (save the token from response)
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+
+### Get Current User
+GET http://localhost:5000/api/auth/me
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### Create Expense
+POST http://localhost:5000/api/expenses
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "title": "Grocery Shopping",
+  "amount": 125.50,
+  "category": "Food",
+  "description": "Weekly groceries from Walmart",
+  "date": "2024-06-15"
+}
+
+### Get All Expenses
+GET http://localhost:5000/api/expenses
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### Get Expense Statistics
+GET http://localhost:5000/api/expenses/stats
+Authorization: Bearer YOUR_TOKEN_HERE

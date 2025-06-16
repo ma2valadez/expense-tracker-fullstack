@@ -1,0 +1,21 @@
+{
+  "name": "expense-tracker-fullstack",
+  "version": "1.0.0",
+  "description": "Full-stack expense tracking application",
+  "scripts": {
+    "install:all": "cd ../backend && npm install && cd ../frontend && npm install",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd ../backend && npm run dev",
+    "dev:frontend": "cd  && npm start",
+    "build": "cd ../backend && npm run build && cd ../frontend && npm run build",
+    "test": "cd ../backend && npm test && cd ../frontend && npm test -- --watchAll=false",
+    "deploy:aws": "./scripts/deploy.sh production"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
